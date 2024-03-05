@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Individual Demonstration Booking System</title>
+  <script src="https://unpkg.com/vue@2.7.8/dist/vue.js"></script>
+ 
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="manifest" href="lessonapp.webmanifest">
+  <script src="lessons.js"></script>
+</head>
+<body>
+  <div id="app">
+    <div>
+      <div>
+        <h1>Individual Demonstration Booking System</h1>
+        <label for="sort">Sort By:</label>
+        <select id="sort" v-model="sortBy">
+          <option value="subject">Subject</option>
+          <option value="location">Location</option>
+          <option value="price">Price</option>
+          <option value="spaces">Spaces</option>
+        </select>
+        <select v-model="sortOrder">
+          <option value="asc">Ascending</option>
+          <option value="desc">Descending</option>
+        </select>
+        <button @click="toggleCartPage" :disabled="cart.length === 0">Shopping Cart</button>
+      </div>
+      <input v-model="searchTerm" @input="filterLessons" placeholder="Search Lessons...">
+      <div>
+        <div v-for="lesson in filteredLessons" :key="lesson.id">
+            <div class="lesson">
+              <i :class="['fas', lesson.icon]"></i> 
+              <p>Subject: {{ lesson.subject }}</p>
+              <p>Location: {{ lesson.location }}</p>
+              <p>Price: ${{ lesson.price }}</p>
+              <p>Spaces: {{ lesson.spaces }}</p>
+              <button @click="addToCart(lesson)" :disabled="lesson.spaces === 0">Add to Cart</button>
+            </div>
+          </div>          
+      </div>
+    </div>
+  </div>
+
+  <div id="cartApp" style="display: none;">
+    <h1>Shopping Cart</h1>
+    <div>
+      <button @click="toggleCartPage">Shopping Cart</button>
+    </div>
+    <div v-if="cart.length === 0">No items in the cart</div>
+    <div v-for="cartItem in cart" :key="cartItem.id">
+        <div class="cart-item">
+          <i :class="['fas', cartItem.icon]"></i> 
+          <p>Subject: {{ cartItem.subject }}</p>
+          <p>Location: {{ cartItem.location }}</p>
+          <p>Price: ${{ cartItem.price }}</p>
+          <button @click="removeFromCart(cartItem)">Remove from Cart</button>
+        </div>
+      </div>
+    <input v-model="name" placeholder="Name">
+    <input v-model="phone" placeholder="Phone Number">
+    <button @click="checkout" :disabled="!validInput">Checkout</button>
+    <p v-if="orderSubmitted">Order has been submitted!</p>
+  </div>
+
+  <script>
+  
+    const eventBus = new Vue();
+
+const app = new Vue({
+  el: '#app',
+  data: {
+    lessons: lessons, 
+    sortBy: 'subject',
+    sortOrder: 'asc',
+    searchTerm: '',
+    cart: [],
+  },
+  computed: {
+    sortedLessons() {
+      return this.lessons.slice().sort((a, b) => {
+        if (this.sortBy === 'subject' || this.sortBy === 'location') {
+          const nameA = a[this.sortBy].toUpperCase();
+          const nameB = b[this.sortBy].toUpperCase();
+          if (this.sortOrder === 'asc') {
+            return nameA.localeCompare(nameB);
+          } else {
+            return nameB.localeCompare(nameA);
+          }
+        } else {
+          const order = this.sortOrder === 'asc' ? 1 : -1;
+          return order * (a[this.sortBy] - b[this.sortBy]);
+        }
+      });
+    },
+    filteredLessons() {
+      if (!this.searchTerm) {
+        return this.sortedLessons;
+      }
+      const search = this.searchTerm.toLowerCase();
+      return this.sortedLessons.filter(lesson => {
+        return (
+          lesson.subject.toLowerCase().includes(search) ||
+          lesson.location.toLowerCase().includes(search)
+        );
+      });
+    },
+  },
+  methods: {
+    addToCart(lesson) {
+  if (lesson.spaces > 0) {
+    lesson.spaces--;
+    this.cart.push({
+      id: lesson.id,
+      subject: lesson.subject,
+      location: lesson.location,
+      price: lesson.price,
+      icon: lesson.icon, 
+    });
+    eventBus.$emit('item-added', this.cart);
+  }
+},
+    toggleCartPage() {
+      const cartApp = document.getElementById('cartApp');
+      if (cartApp.style.display === 'none') {
+        cartApp.style.display = 'block';
+        document.getElementById('app').style.display = 'none';
+      } else {
+        cartApp.style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+      }
+    },
+    filterLessons() {
+      
+    },
+  },
+  created: function() {
+   if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js");
+   }
+},
+});
+
+  
+    new Vue({
+      el: '#cartApp',
+      data: {
+        name: '',
+        phone: '',
+        orderSubmitted: false,
+        cart: [],
+      },
+      
+      computed: {
+        validInput() {
+          return /^[A-Za-z\s]+$/.test(this.name) && /^\d+$/.test(this.phone);
+        },
+      },
+      methods: {
+        removeFromCart(cartItem) {
+      const removedIndex = this.cart.findIndex(item => item.id === cartItem.id);
+      if (removedIndex !== -1) {
+        const removedLesson = this.cart[removedIndex];
+        this.cart.splice(removedIndex, 1);
+
+      const lessonToUpdate = lessons.find(lesson => lesson.id === removedLesson.id);
+      if (lessonToUpdate) {
+        lessonToUpdate.spaces++;
+      }
+
+      
+      eventBus.$emit('item-removed', this.cart);
+    }
+  },
+        checkout() {
+          if (this.validInput) {
+          
+            this.orderSubmitted = true;
+          }
+        },
+        toggleCartPage() {
+          const cartApp = document.getElementById('cartApp');
+          if (cartApp.style.display === 'none') {
+            cartApp.style.display = 'block';
+            document.getElementById('app').style.display = 'none';
+          } else {
+            cartApp.style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+          }
+        },
+      },
+      created() {
+        eventBus.$on('item-added', cart => {
+          this.cart = cart;
+        });
+
+        eventBus.$on('item-removed', cart => {
+          this.cart = cart;
+        });
+      },
+    });
+  </script>
+
+<style>
+    .lesson {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+    }
+    .cart-item {
+      border: 1px solid #ccc;
+      padding: 10px;
+      margin: 10px 0;
+    }
+  </style>
+
+</body>
+</html>
+
