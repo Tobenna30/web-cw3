@@ -1,0 +1,13 @@
+{
+  "name": "web-cw3-",
+  "version": "1.0.0",
+  "description": "",
+  "main": "lessons.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node lessons.js"
+  },
+  "author": "",
+  "license": "ISC"
+}
+
