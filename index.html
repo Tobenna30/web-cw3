@@ -7,6 +7,7 @@
   <link rel="manifest" href="lessonapp.webmanifest">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <!-- <script src="lessons.js"></script> -->
+  
 </head>
 <body>
   <div id="app">
@@ -34,6 +35,21 @@
         TestSave a product
     </button>
       <input v-model="searchTerm" @input="filterLessons" placeholder="Search Lessons...">
+      
+      <strong class="test-elem">HTTPS Test: </strong>
+   <a v-bind:href="serverURL" target="_blank">link</a>
+   <button @click="deleteAllCaches" class="test-elem">
+    <span class="fas fa-trash"></span>
+    Delete All Caches
+</button>
+<button @click="unregisterAllServiceWorkers" class="test-elem">
+    <span class="fab fa-uniregistry"></span>
+    Unregister All ServiceWorkers
+</button>
+<button @click="reloadPage" class="test-elem">
+    <span class="fas fa-sync"></span>
+Reload Page
+ </button>
       <div>
         <div v-for="lesson in filteredLessons" :key="lesson.id">
             <div class="lesson">
@@ -85,6 +101,7 @@ const webstore = new Vue({
     sortOrder: 'asc',
     searchTerm: '',
     cart: [],
+    serverURL: "https://lesseonapp3-env.eba-mwhmmtep.eu-west-2.elasticbeanstalk.com/collections/lessons",
   },
   
 
@@ -98,13 +115,13 @@ const webstore = new Vue({
     //     )
     //   }
     // )
-    
+
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("service-worker.js");
    }
     //  fetch that retrieves all the lessons with GET
-    fetch("http://localhost:3000/collections/lessons").then(
-    // fetch("https://lesseonapp3-env.eba-mwhmmtep.eu-west-2.elasticbeanstalk.com/collections/lessons").then(  
+    // fetch("http://localhost:3000/collections/lessons").then(
+    fetch("https://lesseonapp3-env.eba-mwhmmtep.eu-west-2.elasticbeanstalk.com/collections/lessons").then(  
       function (response) {
         response.json().then(
           function (json) {
@@ -156,6 +173,26 @@ const webstore = new Vue({
     },
   },
   methods: {
+    unregisterAllServiceWorkers() {
+    navigator.serviceWorker.getRegistrations().then(function(registrations) {
+      for (let registration of registrations) {
+        registration.unregister();
+      }
+    });
+    console.log("ServiceWorkers Unregistered");
+  },
+  deleteAllCaches() {
+  caches.keys().then(function(names) {
+    for (let name of names)
+      caches.delete(name);
+  });
+  console.log("All Caches Deleted");
+},
+reloadPage() {
+  window.location.reload();
+},
+
+    
     addToCart(lesson) {
     if (lesson.spaces > 0) {
         // Decrease the lesson space
