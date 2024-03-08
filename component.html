@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Component with Named Slots Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+</head>
+<body>
+    <div id="app">
+        <layout-component>
+            <div slot="header"><header-component></header-component></div>
+            <main-component></main-component>
+            <div slot="footer"><footer-component></footer-component></div>
+        </layout-component>
+    </div>
+
+    <script>
+        const HeaderComponent = {
+            template: `<div>I am the Header Component</div>`
+        };
+
+        const MainComponent = {
+            template: `<div>I am the Main Component</div>`
+        };
+
+        const FooterComponent = {
+            template: `<div>I am the Footer Component</div>`
+        };
+
+        const LayoutComponent = {
+            template: `
+                <div class="container">
+                    <div>I am the container</div>
+                    <header>
+                        <slot name="header"></slot>
+                    </header>
+                    <main>
+                        <slot></slot> <!-- Default slot -->
+                    </main>
+                    <footer>
+                        <slot name="footer"></slot>
+                    </footer>
+                </div>
+            `
+        };
+
+        new Vue({
+            el: '#app',
+            components: {
+                'layout-component': LayoutComponent,
+                'header-component': HeaderComponent,
+                'main-component': MainComponent,
+                'footer-component': FooterComponent
+            }
+        });
+    </script>
+</body>
+</html>

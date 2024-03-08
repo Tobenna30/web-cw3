@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Component with Named Slots Example</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <header>
+      <button @click="showCheckout">Checkout</button>
+    </header>
+    <main>
+      <h3>
+        <component :is="currentView"></component>
+      </h3>
+    </main>
+  </div>
+  
+  <script>
+    const ProductListComponent = { template: `<div>Product List</div>` }
+    const CheckoutComponent = { template: `<div>Checkout</div>` }
+    
+    new Vue({
+      el: '#app',
+      components: {
+        'productlist-component': ProductListComponent,
+        'checkout-component': CheckoutComponent,
+      },
+      data() {
+        return { currentView: ProductListComponent }
+      },
+      methods: {
+        showCheckout() {
+          if (this.currentView === CheckoutComponent) {
+            this.currentView = ProductListComponent;
+          } else {
+            this.currentView = CheckoutComponent;
+          }
+        }
+      }
+    })
+  </script>
+  
+</body>
+</html>
